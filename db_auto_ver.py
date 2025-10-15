@@ -5,16 +5,21 @@ from sys import argv
 def main():
     args = parse_arguments()
 
-    vcf_data1 = {}
+    # dictionary
+    clinvar_data = {}
 
-    print('Reading clinvar VCF file...')
+    print('Reading ClinVar VCF file...')
 
-    with gzip.open(args.clinvar_vcf, 'r') as file_n:
+    # opens compressed vcf file
+    with gzip.open(args.clinvar_vcf, 'r') as file_n:    
         for bline in file_n:
+            # decoding byte code into string (type UTF-8)
             line = bline.decode('UTF-8')
             if not line.startswith('#'):
+                # looks for new line at edges and strips out
+                # splits string at tabs
                 columns = line.strip('\n').split('\t')
-                database_id = columns[2]
+                #look for eigth column in vcf file
                 col8 = columns[7]
                 info = col8.split(';')
 
@@ -26,10 +31,13 @@ def main():
                         cln_sig = item.split('=')[1]
                     if 'CLNREVSTAT=' in item:
                         cln_revstat = item.split('=')[1]
+                    if 'ALLELEID=' in item:
+                        allele_id = item.split('=')[1]
 
-                vcf_data1[database_id] = [cln_sig, cln_revstat]
+                # in dictionary it is assigning the alleleid to the other two info field values
+                clinvar_data[allele_id] = [cln_sig, cln_revstat]
 
-    vcf_data2 = {}
+    pipeline_vcf_data = {}
 
     print('Reading pipeline output VCF file...')
 
@@ -45,26 +53,26 @@ def main():
                 database_id = ''
 
                 for item in info:
-                    if 'clinvar_sig' in item and not 'MISSING' in item:
+                    if 'CLNSIG' in item and not '.' in item:
                         cln_sig = item.split('=')[1]
-                    if 'clinvar_review' in item and not 'MISSING' in item:
+                    if 'CLNREVSTAT' in item and not '.' in item:
                         cln_revstat = item.split('=')[1]
-                    if 'clinvar_id' in item and not 'MISSING' in item:
+                    if 'CLNALLELEID' in item and not '.' in item:
                         database_id = item.split('=')[1]
 
-                vcf_data2[database_id] = [cln_sig, cln_revstat]
+                pipeline_vcf_data[database_id] = [cln_sig, cln_revstat]
 
     match_f_count = 0
     match_nf_count = 0
 
-    print('Analyzing results...')
+    print("Analyzing results...")
 
     with open('analysis_VCF.txt', 'w') as file_n:
-        for database_id, values in vcf_data2.items():
+        for database_id, values in pipeline_vcf_data.items():
             sig2 = values[0]
             rating2 = values[1]
-            if database_id in vcf_data1:
-                vals = vcf_data1[database_id]
+            if database_id in clinvar_data:
+                vals = clinvar_data[database_id]
                 sig1 = vals[0]
                 rating1 = vals[1]
                 if sig1 == sig2 and rating1 == rating2:
