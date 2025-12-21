@@ -6,6 +6,7 @@ def main():
     args = parse_arguments()
 
     vcf_data1 = {}
+    # working in progress
 
     print('Reading clinvar VCF file...')
 
