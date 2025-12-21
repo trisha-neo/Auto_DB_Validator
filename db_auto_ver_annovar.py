@@ -17,7 +17,7 @@ def main():
             line = bline.decode('UTF-8')
             if not line.startswith('#'):
                 # looks for new line at edges and strips out
-                # splits string at tabs
+                # splits strings at tabs between headings
                 columns = line.strip('\n').split('\t')
                 #look for eigth column in vcf file
                 col8 = columns[7]
@@ -34,7 +34,7 @@ def main():
                     if 'ALLELEID=' in item:
                         allele_id = item.split('=')[1]
 
-                # in dictionary it is assigning the alleleid to the other two info field values
+                # in dictionary it is assigning the alleleID to the other two info field values
                 clinvar_data[allele_id] = [cln_sig, cln_revstat]
 
     pipeline_vcf_data = {}
